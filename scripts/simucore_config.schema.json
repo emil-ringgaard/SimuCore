@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SimuCoreConfig",
+  "type": "object",
+  "properties": {
+    "tick_ms": { "type": "integer", "minimum": 1 },
+    "log_enabled": { "type": "boolean" },
+    "boot": {
+      "type":"object",
+      "properties": {
+        "lol": { "type":"integer"}
+      }
+    }
+  },
+  "required": ["tick_ms", "log_enabled"]
+}

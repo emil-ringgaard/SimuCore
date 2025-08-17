@@ -1,0 +1,16 @@
+{
+    "$schema": "https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/schema/library.json",
+    "name": "SimuCore",
+    "version": "1.0.0",
+    "description": "Universal HAL for native + embedded",
+    "frameworks": "*",
+    "platforms": "*",
+    "build": {
+        "extraScript": "scripts/select_src.py",
+        "flags": [
+            "-std=gnu++17",
+            "-Werror",
+            "-DARDUINO_RUNNING_CORE_MAIN=0"
+        ]
+    }
+}

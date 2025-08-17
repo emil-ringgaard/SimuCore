@@ -1,0 +1,16 @@
+# docker-compose.yml
+services:
+  pio:
+    build:
+      dockerfile: Dockerfile
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+      - pio_core_cache:/opt/platformio
+
+    # Let you override the command to any pio subcommand:
+    entrypoint: ["pio"]
+    tty: true
+    stdin_open: true
+volumes:
+  pio_core_cache:

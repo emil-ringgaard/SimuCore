@@ -1,0 +1,10 @@
+name=UniHAL
+version=0.1.0
+author=Emil Ringgaard
+maintainer=Emil Ringgaard
+sentence=Universal Hardware Abstraction Layer for embedded control systems.
+paragraph=Write your control logic once, run it on desktop (simulator), ESP32, STM32, or any other supported platform. UniHAL provides a universal hardware abstraction layer with enforced setup/loop pattern, making embedded development platform-agnostic. Features include built-in simulator and web interface support.
+category=Device Control
+url=https://github.com/emilringgaard/UniHAL
+architectures=*
+includes=UniHAL.h
