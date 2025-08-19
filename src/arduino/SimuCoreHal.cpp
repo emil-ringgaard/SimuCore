@@ -11,9 +11,9 @@ public:
     void update() override {
 
     }
-    std::unique_ptr<SimuCoreHAL> ESP32HAL::create() {
-        return std::make_unique<ESP32HAL>();
-    }
 };
 
+std::unique_ptr<SimuCoreHAL> SimuCoreHAL::create() {
+    return std::make_unique<ESP32HAL>();
+}
 

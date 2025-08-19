@@ -1,16 +1,22 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "SimuCoreConfig",
+  "title": "SimuCoreBaseConfig",
   "type": "object",
   "properties": {
-    "tick_ms": { "type": "integer", "minimum": 1 },
-    "log_enabled": { "type": "boolean" },
-    "boot": {
-      "type":"object",
-      "properties": {
-        "lol": { "type":"integer"}
-      }
+    "sample_frequency": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "log_enabled": {
+      "type": "boolean"
+    },
+    "enable_webserver": {
+      "type": "boolean"
     }
   },
-  "required": ["tick_ms", "log_enabled"]
+  "required": [
+    "sample_frequency",
+    "log_enabled",
+    "enable_webserver"
+  ]
 }

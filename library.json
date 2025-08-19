@@ -6,11 +6,6 @@
     "frameworks": "*",
     "platforms": "*",
     "build": {
-        "extraScript": "scripts/select_src.py",
-        "flags": [
-            "-std=gnu++17",
-            "-Werror",
-            "-DARDUINO_RUNNING_CORE_MAIN=0"
-        ]
+        "extraScript": "scripts/select_src.py"
     }
 }

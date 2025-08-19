@@ -10,8 +10,9 @@ public:
     void update() override {
 
     }
-    std::unique_ptr<SimuCoreHAL> create() {
-        return std::make_unique<NativeHAL>();
-    }
 };
+
+std::unique_ptr<SimuCoreHAL> SimuCoreHAL::create() {
+        return std::make_unique<NativeHAL>();
+}
 

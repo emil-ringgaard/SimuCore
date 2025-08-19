@@ -1,8 +1,9 @@
 import json
 import os
+from pathlib import Path
 
 schema_path = os.path.join(os.path.dirname(__file__), "simucore_config.schema.json")
-output_path = os.path.join(os.path.dirname(__file__), "include", "schema_struct.h")
+output_path = os.path.join(Path(__file__).parent.parent, "include", "SimuCore", "SimuCoreBaseConfig.hpp")
 
 type_map = {
     "string": "std::string",
@@ -50,15 +51,20 @@ def generate_struct(name, schema):
     generated_structs.append("\n".join(lines))
 
 
-with open(schema_path, "r") as f:
-    schema = json.load(f)
 
-root_name = schema.get("title", "Root")
-generate_struct(root_name, schema)
+def generate_header_config():
+    with open(schema_path, "r") as f:
+        schema = json.load(f)
 
-os.makedirs(os.path.dirname(output_path), exist_ok=True)
-with open(output_path, "w") as f:
-    f.write("#pragma once\n\n#include <string>\n#include <vector>\n\n")
-    f.write("\n\n".join(generated_structs))
+    root_name = schema.get("title", "Root")
+    generate_struct(root_name, schema)
 
-print(f"Generated struct(s) written to {output_path}")
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w") as f:
+        f.write("#pragma once\n\n#include <string>\n#include <vector>\n\n")
+        f.write("\n\n".join(generated_structs))
+
+    print(f"Generated struct(s) written to {output_path}")
+
+if __name__ == '__main__':
+    generate_header_config()
