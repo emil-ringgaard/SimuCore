@@ -62,7 +62,10 @@
         "forward_list": "cpp",
         "map": "cpp",
         "ranges": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "condition_variable": "cpp",
+        "mutex": "cpp",
+        "cinttypes": "cpp"
     },
     "python-envs.defaultEnvManager": "ms-python.python:system",
     "python-envs.pythonProjects": []

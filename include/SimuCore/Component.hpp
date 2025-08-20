@@ -1,35 +1,63 @@
 #pragma once
-#include <SimuCore/Binding.hpp>
 #include <vector>
+#include <string>
+#include <memory>
 
-class Component;
+enum class ComponentType 
+{
+	Component,
+	InputSignal,
+	OutputSignal
+};
 
-class Component {
-    protected:
-        static std::vector<BindingBase*> allBindings;
-        std::vector<Component*> subcomponents;
-        virtual void update() = 0;
+class Component
+{
+protected:
+	std::string name_;
+	std::vector<Component *> subcomponents_;
+	Component *parent_;
+	ComponentType componentType_;
+	void setComponentType(const ComponentType componentType) 
+	{
+		componentType_ = componentType;
+	}
 
-    public:
-        Component(Component* parent = nullptr) {
-            if (parent) {
-                parent->subcomponents.push_back(this);
-            }
-        }
-        virtual ~Component() {
-            for (auto* c : subcomponents) delete c;
-        }
-        void updateAll() {
-            update();                              // Update self
-            for (auto* c : subcomponents)          // Update children
-                c->updateAll();
-        }
-        static void updateAllBindings() {
-            for (auto* b : allBindings)
-                b->updateInputs();
-        }
-        template<typename T>
-        void bind(Signal<T>& outvar, Signal<T>& invar) {
-            allBindings.push_back(new Binding<T>(outvar, invar));
-        }
+public:
+	Component(Component *parent, const std::string &name, ComponentType componentType = ComponentType::Component) : name_(name), parent_(parent), componentType_(componentType)
+
+	{
+		if (parent)
+		{
+			parent->subcomponents_.push_back(this);
+		}
+	}
+	virtual void init() = 0;
+	virtual void execute() = 0;
+	std::string getFullName() 
+	{
+		if (parent_)
+		{
+			return parent_->getName() + "->" + name_;
+		}
+		return name_;
+	}
+	std::string getName()
+	{
+		return name_;
+	}
+	void initAll() 
+	{
+		init();
+		for (auto* sub : subcomponents_) {
+			sub->initAll();
+		}
+	}
+	void executeAll() {
+		execute();
+		
+		// Execute all subcomponents
+		for (auto* sub : subcomponents_) {
+			sub->executeAll();
+		}
+	}
 };

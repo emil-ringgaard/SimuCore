@@ -10,31 +10,51 @@
 #include <SimuCore/SimuCoreTick.hpp>
 #include <SimuCore/SimuCoreBaseConfig.hpp>
 #include <SimuCore/Component.hpp>
+#include <SimuCore/SimuCoreWebsocketServer.hpp>
+#include <SimuCore/NoImplementationWebsocketServer.hpp>
 
-class SimuCoreApplication : public Component {
-private:
-    void update() override {
-        }
-    
+class SimuCoreApplication : public Component
+{
 public:
-    SimuCoreApplication() :
-        Component(nullptr),
-        hal(SimuCoreHAL::create()),
-        simu_core_tick(SimuCoreTick::create())
-    {
-    }
-    virtual ~SimuCoreApplication() = default;
+	SimuCoreApplication(const std::string &applicationName) : Component(nullptr,
+																		applicationName),
+															  hal(SimuCoreHAL::create()),
+															  simu_core_tick(SimuCoreTick::create()),
+															  websocket_server_(config_instance.enable_webserver ? SimuCoreWebsocketServer::create_websocket_server() : std::make_unique<NoImplementationWebsocketServer>())
+	{
+		websocket_server_.get()->start(8080);
+	}
+	
+	void initApp() 
+	{
+		bindSignals();
+		initAll();
+	}
 
-    
-    void startApp() {
-        hal->update();
-        updateAll();
-        Component::updateAllBindings();
-        simu_core_tick->wait_for_next_tick();
-    }
+	// Run the entire application - executes all components in hierarchy
+	void run()
+	{
+		executeAll();
+		sendSignalValuesToWebsockets();
+		simu_core_tick->wait_for_next_tick();
+	}
+	
+	void sendSignalValuesToWebsockets() 
+	{
+		websocket_server_.get()->send_message_to_connected_clients("sending values!");
+	}
+	virtual void bindSignals() = 0;
 
-protected:
-    virtual void init() = 0;
-    std::unique_ptr<SimuCoreHAL> hal;
-    std::unique_ptr<SimuCoreTick> simu_core_tick;
+private:
+	void init() override
+	{
+		
+	}
+	void execute() override
+	{
+		// Application's execute is called first, then all subcomponents
+	}
+	std::unique_ptr<SimuCoreHAL> hal;
+	std::unique_ptr<SimuCoreTick> simu_core_tick;
+	std::unique_ptr<SimuCoreWebsocketServer> websocket_server_;
 };
