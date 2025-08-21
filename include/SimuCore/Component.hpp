@@ -2,13 +2,9 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <iostream>
 
-enum class ComponentType 
-{
-	Component,
-	InputSignal,
-	OutputSignal
-};
+class BaseSignal;
 
 class Component
 {
@@ -16,14 +12,9 @@ protected:
 	std::string name_;
 	std::vector<Component *> subcomponents_;
 	Component *parent_;
-	ComponentType componentType_;
-	void setComponentType(const ComponentType componentType) 
-	{
-		componentType_ = componentType;
-	}
 
 public:
-	Component(Component *parent, const std::string &name, ComponentType componentType = ComponentType::Component) : name_(name), parent_(parent), componentType_(componentType)
+	Component(Component *parent, const std::string &name) : name_(name), parent_(parent)
 
 	{
 		if (parent)
@@ -33,7 +24,7 @@ public:
 	}
 	virtual void init() = 0;
 	virtual void execute() = 0;
-	std::string getFullName() 
+	std::string getFullName()
 	{
 		if (parent_)
 		{
@@ -45,18 +36,21 @@ public:
 	{
 		return name_;
 	}
-	void initAll() 
+	void initAll()
 	{
 		init();
-		for (auto* sub : subcomponents_) {
+		for (auto *sub : subcomponents_)
+		{
 			sub->initAll();
 		}
 	}
-	void executeAll() {
+	void executeAll()
+	{
 		execute();
-		
+
 		// Execute all subcomponents
-		for (auto* sub : subcomponents_) {
+		for (auto *sub : subcomponents_)
+		{
 			sub->executeAll();
 		}
 	}

@@ -2,12 +2,12 @@ import os
 import signal
 import sys
 from pathlib import Path
-from flask import Flask, send_from_directory, send_file
 from multiprocessing import Process
 
 STATIC_FOLDER = os.path.join(Path(__file__).parent.parent, 'simulation-frontend/dist')
 
 def create_app():
+    from flask import Flask, send_from_directory, send_file
     app = Flask(__name__)
 
     @app.route('/')
@@ -27,6 +27,7 @@ def run_server():
     app.run(host='0.0.0.0', port=8082)
 
 def start_simulation_framework(source, target, env):
+    env.Execute("$PYTHONEXE -m pip install flask")
     print("Starting simulation framework")
 
     p = Process(target=run_server)

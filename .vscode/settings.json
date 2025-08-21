@@ -65,7 +65,21 @@
         "valarray": "cpp",
         "condition_variable": "cpp",
         "mutex": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "__bit_reference": "cpp",
+        "__locale": "cpp",
+        "__split_buffer": "cpp",
+        "__verbose_abort": "cpp",
+        "execution": "cpp",
+        "ios": "cpp",
+        "locale": "cpp",
+        "__hash_table": "cpp",
+        "__node_handle": "cpp",
+        "__tree": "cpp",
+        "bitset": "cpp",
+        "complex": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     },
     "python-envs.defaultEnvManager": "ms-python.python:system",
     "python-envs.pythonProjects": []
