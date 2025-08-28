@@ -1,16 +1,11 @@
-#include <SimuCore/SimuCoreBaseConfig.hpp>
+#pragma once
 #include <string>
 
-class SimuCoreLogger 
+class SimuCoreLogger
 {
-	public:
-	static void log(std::string message) 
-	{
-		if (config_instance.log_enabled) 
-		{
-			log_(message);	
-		}
-	}
-	private:
-	static void log_(std::string message);
+public:
+	static void log(const std::string &message);
+
+private:
+	static void log_(const std::string &message);
 };

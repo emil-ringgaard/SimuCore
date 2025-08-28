@@ -4,3 +4,7 @@
 .vscode/launch.json
 .vscode/ipch
 venv
+generated
+*pb.*
+pb_encode.h
+pb_decode.h

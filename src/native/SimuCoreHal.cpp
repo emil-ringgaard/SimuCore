@@ -1,18 +1,18 @@
 #include "SimuCore/SimuCoreHAL.hpp"
 #include <iostream>
 
-
-class NativeHAL : public SimuCoreHAL {
+class NativeHAL : public SimuCoreHAL
+{
 public:
-    void init() override {
-        std::cout << "Native HAL init" << std::endl;
+    void init() override
+    {
     }
-    void update() override {
-
+    void update() override
+    {
     }
 };
 
-std::unique_ptr<SimuCoreHAL> SimuCoreHAL::create() {
-        return std::make_unique<NativeHAL>();
+std::unique_ptr<SimuCoreHAL> SimuCoreHAL::create()
+{
+    return std::make_unique<NativeHAL>();
 }
-

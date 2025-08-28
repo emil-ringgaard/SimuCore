@@ -79,7 +79,9 @@
         "bitset": "cpp",
         "complex": "cpp",
         "queue": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "messages.pb.h": "c",
+        "print": "cpp"
     },
     "python-envs.defaultEnvManager": "ms-python.python:system",
     "python-envs.pythonProjects": []

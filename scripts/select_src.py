@@ -1,11 +1,19 @@
+from pathlib import Path
+Import("env")
+
+env.Execute(f"$PYTHONEXE -m pip install -r requirements.txt")
+
 import os
-from generate_cpp_config import generate_cpp_config
-from generate_config_struct import generate_header_config
+import subprocess
+from generate_struct_from_schema import generate_cpp_and_header_files
+from generate_config import generate_config_class
 from simulation import start_simulation_framework
 from SCons.Script import Import, DefaultEnvironment
 
 
-Import("env")
+
+
+
 env.AddCustomTarget(
     'simulation',
     None,
@@ -14,6 +22,7 @@ env.AddCustomTarget(
     description=None,
     always_build=True,
 )
+
 cxxflags = " ".join(env.get("CXXFLAGS", []))
 
 if "-std=gnu++17" not in cxxflags and "-std=c++17" not in cxxflags:
@@ -24,8 +33,8 @@ if "-std=gnu++17" not in cxxflags and "-std=c++17" not in cxxflags:
     exit(1)
 print("SimuCore SRC_FILTER:", env['SRC_FILTER'])
 
-generate_header_config()
-generate_cpp_config(env)
+generate_cpp_and_header_files(env)
+generate_config_class(env)
 
 platform = env.GetProjectOption("platform")
 frameworks = env.GetProjectOption("framework")
@@ -34,6 +43,8 @@ src_dirs = []
 
 # Always include generic
 src_dirs.append("+<generic/>")
+src_dirs.append("+<generated/>")
+
 
 if platform == "native":
     src_dirs.append("+<native/>")
