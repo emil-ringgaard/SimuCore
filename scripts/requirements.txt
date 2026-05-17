@@ -1,3 +1,5 @@
 pydantic
 flask
 jsonschema
+tenacity
+websockets

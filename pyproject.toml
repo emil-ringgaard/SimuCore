@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "simucore-pytest"
+version = "0.1.0"
+description = "System testing framework and pytest plugin for the C++ simulator"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = ["pytest", "platformio", "pydantic", "tomli_w", "ruff", "tenacity", "websockets", "jsonschema"]
+
+[tool.setuptools.packages.find]
+where = ["."]                 # Look in the current root directory
+include = ["simucore_pytest"] # Specifically include this folder as the package
+
+[project.entry-points.pytest11]
+# The key 'simucore' is the internal name pytest will use for your plugin.
+# The value 'simucore_pytest.conftest' (or .plugin) points to the file containing your fixtures.
+simucore = "simucore_pytest.plugin"
+
+[tool.pytest.ini_options]
+# Register your custom markers here to prevent pytest warnings
+markers = [
+    "sim_duration(ticks): mark a test with the total number of simulation ticks to run",
+]
+# Define default command line flags for pytest
+addopts = "-v --tb=short"

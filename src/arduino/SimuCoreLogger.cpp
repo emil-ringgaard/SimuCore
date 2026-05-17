@@ -1,6 +1,6 @@
 #include <SimuCore/SimuCoreLogger.hpp>
 #include <iostream>
 
-void SimuCoreLogger::log_(std::string message)
+void SimuCoreLogger::log_(const std::string &message)
 {
 }

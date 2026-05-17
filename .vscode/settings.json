@@ -81,7 +81,8 @@
         "queue": "cpp",
         "stack": "cpp",
         "messages.pb.h": "c",
-        "print": "cpp"
+        "print": "cpp",
+        "unordered_set": "cpp"
     },
     "python-envs.defaultEnvManager": "ms-python.python:system",
     "python-envs.pythonProjects": []

@@ -1,5 +1,6 @@
 #include <SimuCore/generated/Config.hpp>
 #include <SimuCore/SimuCoreApplication.hpp>
+#include <unordered_set>
 
 void to_json(nlohmann::json &j, SignalBase *signal)
 {
@@ -14,6 +15,7 @@ SimuCoreApplication::SimuCoreApplication(const std::string &applicationName)
     : Component(nullptr, applicationName),
       hal(SimuCoreHAL::create()),
       simu_core_tick(SimuCoreTick::create()),
+      _applicationTree(this),
       websocket_server_(SimuCore::config.enable_webserver.getValue()
                             ? SimuCoreWebsocketServer::create_websocket_server()
                             : std::make_unique<NoImplementationWebsocketServer>())
@@ -29,70 +31,69 @@ void SimuCoreApplication::on_connection(int clientId, bool connected)
 {
     if (connected)
     {
-        websocket_server_->send_message_to_client(clientId, this->buildComponentTree().dump());
+        websocket_server_->send_message_to_client(clientId, _applicationTreeJson.dump());
     }
 }
 
 void SimuCoreApplication::on_message(int clientId, const std::string &message)
 {
-    // Implementation commented out
-}
-
-nlohmann::json SimuCoreApplication::buildComponentTree()
-{
-    auto buildJsonTree = [](Component *component, auto &self) -> nlohmann::json
+    nlohmann::json jsonMsg = nlohmann::json::parse(message);
+    if (!jsonMsg.contains("command"))
     {
-        nlohmann::json componentJson;
-        componentJson["name"] = component->getName();
-        componentJson["id"] = component->getId();
-
-        if (component->getComponentType() == ComponentType::INTERNAL_INPUT ||
-            component->getComponentType() == ComponentType::INTERNAL_OUTPUT)
+        SimuCore::Response errorResponse{
+            .message = "Received message did not contain a command!",
+            .status = SimuCore::StatusEnum::FAILURE};
+        nlohmann::json errorResponseJson = errorResponse;
+        websocket_server_->send_message_to_client(clientId, errorResponseJson.dump());
+        return;
+    }
+    SimuCore::Response successResponse;
+    successResponse.status = SimuCore::StatusEnum::SUCCESS;
+    SimuCore::CommandEnum command = jsonMsg["command"];
+    if (command == SimuCore::CommandEnum::SUBSCRIBE)
+    {
+        std::unordered_set<int> idsSubscribedTo;
+        for (auto &item : this->subscriptions)
         {
-            const auto signal = SignalRegistry::getInstance().find(component->getId());
-
-            componentJson["value"] = signal->getValueAsString();
-            componentJson["typeName"] = signal->getTypeName();
-
-            if (component->getComponentType() == ComponentType::INTERNAL_OUTPUT)
+            idsSubscribedTo.insert(item.id);
+        }
+        SimuCore::SubscribeProtocol receivedSubscribeProtocol = jsonMsg;
+        for (auto &signal : receivedSubscribeProtocol.payload)
+        {
+            if (idsSubscribedTo.count(signal.id))
             {
-                for (auto *connectedInput : signal->getConnectedBaseSignals())
-                {
-                    if (componentJson.find("connectedInputs") == componentJson.end())
-                    {
-                        componentJson["connectedInputs"] = nlohmann::json::array();
-                    }
-                    componentJson["connectedInputs"].push_back(
-                        nlohmann::json{{"id", connectedInput->getId()}});
-                }
+                successResponse.status = SimuCore::StatusEnum::WARNING;
+                successResponse.message += "Signal " + std::to_string(signal.id) + " already exists in subscription list!";
+            }
+            else
+            {
+                subscriptions.push_back(signal);
+                successResponse.message += "subscribed to: " + std::to_string(signal.id) + " ";
             }
         }
-
-        auto subComponents = component->getSubComponents();
-        if (!subComponents.empty())
-        {
-            for (auto *subComponent : subComponents)
-            {
-                if (subComponent)
-                {
-                    std::string componentType = subComponent->getComponentTypeName() + "s";
-                    if (componentJson.find(componentType) == componentJson.end())
-                    {
-                        componentJson[componentType] = nlohmann::json::array();
-                    }
-                    componentJson[componentType].push_back(self(subComponent, self));
-                }
-            }
-        }
-
-        return componentJson;
-    };
-
-    return buildJsonTree(this, buildJsonTree);
+        websocket_server_->send_message_to_client(clientId, nlohmann::json(successResponse).dump());
+    }
+    else if (command == SimuCore::CommandEnum::START_SIMULATION)
+    {
+        simulation_system.is_simulating = true;
+        SimuCoreLogger::log("Starting simulation");
+    }
+    else if (command == SimuCore::CommandEnum::STOP_SIMULATION)
+    {
+        simulation_system.is_simulating = false;
+    }
+    else if (command == SimuCore::CommandEnum::TICK)
+    {
+        simulation_system.ready_for_next_tick = true;
+    }
 }
 
 void SimuCoreApplication::initApp()
 {
+    _applicationTreeJson = _applicationTree.getApplicationTreeAsJson();
+    if (_initialApplicationTreeJson.is_null()) {
+        _initialApplicationTreeJson = _applicationTreeJson;
+    }
     bindSignals();
     initAll();
 }
@@ -101,12 +102,28 @@ void SimuCoreApplication::run()
 {
     executeAll();
     sendSignalValuesToWebsockets();
-    simu_core_tick->wait_for_next_tick();
+    if (simulation_system.is_simulating)
+    {
+        while (!simulation_system.ready_for_next_tick)
+        {
+        }
+        std::cout << "IPDATING NPW" << std::endl;
+        simulation_system.ready_for_next_tick = false;
+    }
+    else
+    {
+        simu_core_tick->wait_for_next_tick();
+    }
 }
 
 void SimuCoreApplication::sendSignalValuesToWebsockets()
 {
-    // Implementation commented out
+    SimuCore::ApplicationInfoProtocol applicationInfo;
+    applicationInfo.response = SimuCore::Response{.message = "Info", .status = SimuCore::StatusEnum::SUCCESS};
+    applicationInfo.subscribed_signals = subscriptions;
+    applicationInfo.up_time_in_s = 1;
+
+    websocket_server_->send_message_to_connected_clients(nlohmann::json{applicationInfo}.dump());
 }
 
 void SimuCoreApplication::init()
@@ -116,4 +133,9 @@ void SimuCoreApplication::init()
 void SimuCoreApplication::execute()
 {
     // Application's execute is called first, then all subcomponents
+}
+void SimuCoreApplication::reset_system()
+{
+    _applicationTreeJson = _initialApplicationTreeJson;
+    this->initAll();
 }

@@ -1,7 +1,8 @@
 from pathlib import Path
+
 Import("env")
 
-env.Execute(f"$PYTHONEXE -m pip install -r requirements.txt")
+# env.Execute(f"$PYTHONEXE -m pip install -r requirements.txt")
 
 import os
 import subprocess
@@ -11,14 +12,11 @@ from simulation import start_simulation_framework
 from SCons.Script import Import, DefaultEnvironment
 
 
-
-
-
 env.AddCustomTarget(
-    'simulation',
-    None,
+    "simulation",
+    "$BUILD_DIR/program",
     start_simulation_framework,
-    title='simulation',
+    title="simulation",
     description=None,
     always_build=True,
 )
@@ -31,7 +29,7 @@ if "-std=gnu++17" not in cxxflags and "-std=c++17" not in cxxflags:
     print("    build_unflags = -std=gnu++11 -std=gnu++14")
     print("    build_flags = -std=gnu++17\n")
     exit(1)
-print("SimuCore SRC_FILTER:", env['SRC_FILTER'])
+print("SimuCore SRC_FILTER:", env["SRC_FILTER"])
 
 generate_cpp_and_header_files(env)
 generate_config_class(env)

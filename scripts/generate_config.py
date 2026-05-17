@@ -1,6 +1,6 @@
 from generate_struct_from_schema import include_dir, schema_dir
 from pathlib import Path
-from simucore_schema import Config, generate_simcore_schema
+from simucore_pytest.core.schemas import Config, generate_simcore_schema
 import json
 
 type_map = {
