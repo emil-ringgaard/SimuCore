@@ -6,6 +6,9 @@
     "frameworks": "*",
     "platforms": "*",
     "build": {
-        "extraScript": "scripts/select_src.py"
+        "extraScript": "scripts/select_src.py",
+        "flags":[
+            "-O3 -flto"
+        ]
     }
 }

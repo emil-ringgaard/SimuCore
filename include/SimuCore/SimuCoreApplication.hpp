@@ -15,13 +15,13 @@
 #include <SimuCore/json.hpp>
 #include <memory>
 #include <string>
+#include <atomic>
 
 void to_json(nlohmann::json &j, SignalBase *signal);
 
-struct SimulationSystem
-{
-	bool is_simulating;
-	bool ready_for_next_tick;
+struct SimulationSystem {
+    std::atomic<bool> is_simulating{false};
+    std::atomic<int> ticks_remaining{0};
 };
 
 class SimuCoreApplication : public Component
@@ -53,5 +53,5 @@ private:
 	nlohmann::json _initialApplicationTreeJson;
 	nlohmann::json _applicationTreeJson;
 	
-	SimulationSystem simulation_system = {.is_simulating = false, .ready_for_next_tick = false};
+	SimulationSystem simulation_system = {.is_simulating = false, .ticks_remaining = 0};
 };

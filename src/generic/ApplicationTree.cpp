@@ -1,5 +1,7 @@
 #include <SimuCore/ApplicationTree.hpp>
 #include <SimuCore/Signal.hpp>
+#include <SimuCore/generated/Config.hpp>
+
 
 const nlohmann::json ApplicationTree::getApplicationTreeAsJson()
 {

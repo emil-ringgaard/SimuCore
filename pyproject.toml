@@ -8,7 +8,17 @@ version = "0.1.0"
 description = "System testing framework and pytest plugin for the C++ simulator"
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = ["pytest", "platformio", "pydantic", "tomli_w", "ruff", "tenacity", "websockets", "jsonschema"]
+dependencies = [
+    "pytest",
+    "platformio",
+    "pydantic",
+    "tomli_w",
+    "ruff",
+    "tenacity",
+    "websockets",
+    "jsonschema",
+    "pytest-repeat>=0.9.3",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]                 # Look in the current root directory

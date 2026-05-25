@@ -12,7 +12,8 @@ COMMANDS = Literal[
     "START_SIMULATION",
     "STOP_SIMULATION",
     "TICK",
-    "INFO"
+    "INFO",
+    "APPLICATION_TREE"
 ]
 ResponseStatus = Literal["SUCCESS", "FAILURE", "WARNING"]
 
@@ -53,6 +54,7 @@ class UpdatePysicalInputsProtocol(BaseModel):
 
 class TickSystem(BaseModel):
     command: COMMANDS = "TICK"
+    number_of_ticks: int
 
 
 class StartSimulation(BaseModel):
@@ -64,6 +66,9 @@ class StopSimulation(BaseModel):
 
 class ApplicationInfo(BaseModel):
     command: COMMANDS = "INFO"
+
+class ApplicationTreeData(BaseModel):
+    command: COMMANDS = "APPLICATION_TREE"
 
 
 class Response(BaseModel):
@@ -104,6 +109,7 @@ def generate_simucore_schemas():
     shutil.rmtree(Path(__file__).parent.parent.parent / "scripts" / "generated", ignore_errors=True)
     all_schemas = [
         generate_simcore_schema(SubscribeProtocol),
+        generate_simcore_schema(TickSystem),
         generate_simcore_schema(UpdatePysicalInputsProtocol),
         generate_simcore_schema(UpdataParametersProtocol),
         generate_simcore_schema(ApplicationInfoProtocol),

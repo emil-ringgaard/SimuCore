@@ -79,6 +79,7 @@ void SimuCoreApplication::on_message(int clientId, const std::string &message)
         simulation_system.is_simulating = true;
         this->reset_system();
         SimuCoreLogger::log("Starting simulation");
+        websocket_server_->send_message_to_client(clientId, nlohmann::json(successResponse).dump());
     }
     else if (command == SimuCore::CommandEnum::STOP_SIMULATION)
     {
@@ -86,7 +87,9 @@ void SimuCoreApplication::on_message(int clientId, const std::string &message)
     }
     else if (command == SimuCore::CommandEnum::TICK)
     {
-        simulation_system.ready_for_next_tick = true;
+        SimuCore::TickSystem tick_system = jsonMsg;
+        simulation_system.ticks_remaining = tick_system.number_of_ticks;
+        return;
     }
     else if (command == SimuCore::CommandEnum::UPDATE_PHYSICAL_INPUT) {
         SimuCore::UpdatePysicalInputsProtocol update_inputs = jsonMsg;
@@ -95,6 +98,16 @@ void SimuCoreApplication::on_message(int clientId, const std::string &message)
             auto new_signal = SignalRegistry::getInstance().find(signal.id);
         }
         websocket_server_->send_message_to_client(clientId, nlohmann::json(successResponse).dump());
+    }
+    else if (command == SimuCore::CommandEnum::INFO) {
+        SimuCore::ApplicationInfoProtocol applicationInfo;
+        applicationInfo.response = SimuCore::Response{.message = "Info", .status = SimuCore::StatusEnum::SUCCESS};
+        applicationInfo.subscribed_signals = subscriptions;
+        applicationInfo.up_time_in_milli_seconds = _up_time_in_milli_seconds;
+        websocket_server_->send_message_to_client(clientId, nlohmann::json{applicationInfo}.dump());
+    }
+    else if (command == SimuCore::CommandEnum::APPLICATION_TREE) {
+        websocket_server_->send_message_to_client(clientId, _applicationTree.getApplicationTreeAsJson().dump());
     }
 }
 
@@ -111,18 +124,28 @@ void SimuCoreApplication::initApp()
 
 void SimuCoreApplication::run()
 {
-    executeAll();
-    sendSignalValuesToWebsockets();
-    _up_time_in_milli_seconds += 1000 / SimuCore::config.sample_frequency.getValue();
-    if (simulation_system.is_simulating)
+    if (simulation_system.is_simulating.load())
     {
-        while (!simulation_system.ready_for_next_tick)
-        {
+        // Wait for a TICK command to set ticks_remaining > 0
+        while (simulation_system.ticks_remaining.load() == 0) { }
+        
+        executeAll();
+        _up_time_in_milli_seconds += 1000 / SimuCore::config.sample_frequency.getValue();
+        
+        // Decrement and check if we just finished the batch
+        int prev = simulation_system.ticks_remaining.fetch_sub(1);
+        if (prev == 1) {
+            SimuCore::Response successResponse;
+            successResponse.status = SimuCore::StatusEnum::SUCCESS;
+            websocket_server_->send_message_to_connected_clients(
+                nlohmann::json(successResponse).dump());
         }
-        simulation_system.ready_for_next_tick = false;
     }
     else
     {
+        executeAll();
+        _up_time_in_milli_seconds += 1000 / SimuCore::config.sample_frequency.getValue();
+        sendSignalValuesToWebsockets();
         simu_core_tick->wait_for_next_tick();
     }
 }

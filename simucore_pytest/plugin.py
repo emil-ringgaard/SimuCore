@@ -3,7 +3,6 @@ from pathlib import Path
 from simucore_pytest.config.models import SimucoreTestConfig
 from simucore_pytest.core.simulation import SimuCoreSystem
 from platformio.run.cli import cli as run_cli
-import os
 from collections.abc import Generator
 from platformio.public import load_build_metadata
 import subprocess
@@ -30,16 +29,14 @@ def pytest_sessionstart(session: SimucorePytestSession) -> None:
     run_cli(["-d", platformio_project_path, "-e", "native"], standalone_mode=False)
 
 
-@pytest.fixture
-def simulation_instance(request: SimucorePytestSession) -> Generator[SimuCoreSystem]:
+@pytest.fixture(scope="session")
+def simulation_instance_session(request: SimucorePytestSession) -> Generator[SimuCoreSystem]:
     platformio_project_path = request.config.simucore_test_config.platform_io_project_path.resolve()
     meta = load_build_metadata(platformio_project_path, ["native"])
     prog_path = meta["native"]["prog_path"]
-
     process = subprocess.Popen([prog_path])
     try:
         simucore_system = SimuCoreSystem()
-        simucore_system.start()
         yield simucore_system
     finally:
         process.terminate()
@@ -48,3 +45,8 @@ def simulation_instance(request: SimucorePytestSession) -> Generator[SimuCoreSys
         except subprocess.TimeoutExpired:
             process.kill()
             process.wait()
+
+@pytest.fixture
+def simulation_instance(simulation_instance_session: SimuCoreSystem) -> SimuCoreSystem:
+    simulation_instance_session.start()
+    return simulation_instance_session
