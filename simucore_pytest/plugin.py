@@ -27,7 +27,7 @@ def pytest_configure(config: SimucorePytestConfig) -> None:
 def pytest_sessionstart(session: SimucorePytestSession) -> None:
     platformio_project_path = session.config.simucore_test_config.platform_io_project_path.resolve()
     run_cli(["-d", platformio_project_path, "-e", "native", "-t", "fullclean", "-s"], standalone_mode=False)
-    run_cli(["-d", platformio_project_path, "-e", "native", "-s"], standalone_mode=False)
+    run_cli(["-d", platformio_project_path, "-e", "native"], standalone_mode=False)
 
 
 @pytest.fixture

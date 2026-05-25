@@ -12,6 +12,7 @@ COMMANDS = Literal[
     "START_SIMULATION",
     "STOP_SIMULATION",
     "TICK",
+    "INFO"
 ]
 ResponseStatus = Literal["SUCCESS", "FAILURE", "WARNING"]
 
@@ -61,6 +62,9 @@ class StartSimulation(BaseModel):
 class StopSimulation(BaseModel):
     command: COMMANDS = "STOP_SIMULATION"
 
+class ApplicationInfo(BaseModel):
+    command: COMMANDS = "INFO"
+
 
 class Response(BaseModel):
     status: ResponseStatus
@@ -69,7 +73,7 @@ class Response(BaseModel):
 
 class ApplicationInfoProtocol(BaseModel):
     response: Response
-    up_time_in_s: int
+    up_time_in_milli_seconds: int
     subscribed_signals: list[SubscribePayload]
 
 
@@ -87,7 +91,7 @@ class SimulationModelConfig(BaseModel):
 
 def generate_simcore_schema(pydantic_model: BaseModel):
     name = pydantic_model.__name__
-    generated_folder = Path(__file__).parent.joinpath("generated")
+    generated_folder = Path(__file__).parent.parent.parent / "scripts" / "generated"
     schema_path = generated_folder.joinpath(name + ".schema.json")
     generated_folder.mkdir(exist_ok=True)
     with open(schema_path, "w") as schema:
@@ -96,7 +100,8 @@ def generate_simcore_schema(pydantic_model: BaseModel):
 
 
 def generate_simucore_schemas():
-    shutil.rmtree(Path(__file__).parent.joinpath("generated"), ignore_errors=True)
+    print(Path(Path(__file__).parent.parent.parent / "scripts" / "generated").resolve())
+    shutil.rmtree(Path(__file__).parent.parent.parent / "scripts" / "generated", ignore_errors=True)
     all_schemas = [
         generate_simcore_schema(SubscribeProtocol),
         generate_simcore_schema(UpdatePysicalInputsProtocol),

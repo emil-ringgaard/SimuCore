@@ -1,6 +1,7 @@
 #include <SimuCore/generated/Config.hpp>
 #include <SimuCore/SimuCoreApplication.hpp>
 #include <unordered_set>
+#include <string>
 
 void to_json(nlohmann::json &j, SignalBase *signal)
 {
@@ -76,6 +77,7 @@ void SimuCoreApplication::on_message(int clientId, const std::string &message)
     else if (command == SimuCore::CommandEnum::START_SIMULATION)
     {
         simulation_system.is_simulating = true;
+        this->reset_system();
         SimuCoreLogger::log("Starting simulation");
     }
     else if (command == SimuCore::CommandEnum::STOP_SIMULATION)
@@ -86,6 +88,14 @@ void SimuCoreApplication::on_message(int clientId, const std::string &message)
     {
         simulation_system.ready_for_next_tick = true;
     }
+    else if (command == SimuCore::CommandEnum::UPDATE_PHYSICAL_INPUT) {
+        SimuCore::UpdatePysicalInputsProtocol update_inputs = jsonMsg;
+        for (const auto &signal : update_inputs.parameters) {
+            SignalRegistry::getInstance().changeSignalValue(signal.id, signal.value);
+            auto new_signal = SignalRegistry::getInstance().find(signal.id);
+        }
+        websocket_server_->send_message_to_client(clientId, nlohmann::json(successResponse).dump());
+    }
 }
 
 void SimuCoreApplication::initApp()
@@ -94,6 +104,7 @@ void SimuCoreApplication::initApp()
     if (_initialApplicationTreeJson.is_null()) {
         _initialApplicationTreeJson = _applicationTreeJson;
     }
+    _up_time_in_milli_seconds = 0;
     bindSignals();
     initAll();
 }
@@ -102,12 +113,12 @@ void SimuCoreApplication::run()
 {
     executeAll();
     sendSignalValuesToWebsockets();
+    _up_time_in_milli_seconds += 1000 / SimuCore::config.sample_frequency.getValue();
     if (simulation_system.is_simulating)
     {
         while (!simulation_system.ready_for_next_tick)
         {
         }
-        std::cout << "IPDATING NPW" << std::endl;
         simulation_system.ready_for_next_tick = false;
     }
     else
@@ -121,7 +132,7 @@ void SimuCoreApplication::sendSignalValuesToWebsockets()
     SimuCore::ApplicationInfoProtocol applicationInfo;
     applicationInfo.response = SimuCore::Response{.message = "Info", .status = SimuCore::StatusEnum::SUCCESS};
     applicationInfo.subscribed_signals = subscriptions;
-    applicationInfo.up_time_in_s = 1;
+    applicationInfo.up_time_in_milli_seconds = _up_time_in_milli_seconds;
 
     websocket_server_->send_message_to_connected_clients(nlohmann::json{applicationInfo}.dump());
 }
@@ -137,5 +148,7 @@ void SimuCoreApplication::execute()
 void SimuCoreApplication::reset_system()
 {
     _applicationTreeJson = _initialApplicationTreeJson;
-    this->initAll();
+    const auto signalRegistry = &SignalRegistry::getInstance();
+    signalRegistry->reset_signals();
+    this->initApp();
 }

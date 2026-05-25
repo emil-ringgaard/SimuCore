@@ -12,4 +12,5 @@ void setup()
 void loop()
 {
 	application->run();
+	// SimuCoreLogger::log(application->hellp.physical_input_signal.getValueAsString());
 }

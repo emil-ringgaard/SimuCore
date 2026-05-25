@@ -7,6 +7,7 @@ Import("env")
 import os
 import subprocess
 from generate_struct_from_schema import generate_cpp_and_header_files
+from simucore_pytest.core.schemas import generate_simucore_schemas
 from generate_config import generate_config_class
 from simulation import start_simulation_framework
 from SCons.Script import Import, DefaultEnvironment
@@ -39,7 +40,7 @@ frameworks = env.GetProjectOption("framework")
 
 src_dirs = []
 
-# Always include generic
+# Always include generic and generated
 src_dirs.append("+<generic/>")
 src_dirs.append("+<generated/>")
 

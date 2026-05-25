@@ -1,6 +1,6 @@
 {
     "$schema": ".pio/libdeps/native/SimuCore/scripts/generated/Config.schema.json",
-    "sample_frequency": 1,
+    "sample_frequency": 100,
     "enable_webserver": true,
     "log_enabled": true,
     "blah": "ssd2"

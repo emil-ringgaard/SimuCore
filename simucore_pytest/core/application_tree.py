@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import List, Optional
 
 class ConnectedInput(BaseModel):
     id: int
@@ -15,7 +14,7 @@ class Output(BaseModel):
     name: str
     typeName: str
     value: str
-    connectedInputs: Optional[List[ConnectedInput]] = []
+    connectedInputs: list[ConnectedInput] | None = []
 
 class Input(BaseModel):
     id: int
@@ -23,18 +22,26 @@ class Input(BaseModel):
     typeName: str
     value: str
 
+class PhysicalInput(Input):
+    pass
+
+class PhysicalOutput(Output):
+    pass
+
 class Component(BaseModel):
     id: int
     name: str
-    Components: Optional[List["Component"]] = []
-    Inputs: Optional[List[Input]] = []
-    Outputs: Optional[List[Output]] = []
-    Parameters: Optional[List[Parameter]] = []
+    Components: list["Component"] | None = []
+    Inputs: list[Input] | None = []
+    Outputs: list[Output] | None = []
+    PhysicalOutputs: list[PhysicalOutput] | None = None
+    PhysicalInputs: list[PhysicalInput] | None = None
+    Parameters: list[Parameter] | None = []
 
 Component.model_rebuild()
 
 class ApplicationTree(BaseModel):
     id: int
     name: str
-    Components: List[Component]
-    config: Optional[dict] = []
+    Components: list[Component]
+    config: dict = []

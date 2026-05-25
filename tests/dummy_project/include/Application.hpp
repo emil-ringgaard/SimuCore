@@ -39,6 +39,8 @@ public:
 	AnotherTestComponent testcomp;
 	OutputSignal<int> output;
 	OutputSignal<double> output_double{this, "OutputDouble", 3.14};
+	OutputSignal<double> output_double2{this, "Din mor er en hest", 3.14};
+	PhysicalInput<int> physical_input_signal{this, "Physical input signal", 2};
 };
 
 class Application : public SimuCoreApplication

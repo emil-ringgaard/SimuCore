@@ -11,3 +11,4 @@ pb_decode.h
 *.egg-info
 __pycache__
 .DS_Store
+uv.lock

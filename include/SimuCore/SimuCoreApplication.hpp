@@ -48,8 +48,10 @@ private:
 	std::unique_ptr<SimuCoreWebsocketServer> websocket_server_;
 	std::vector<SimuCore::SubscribePayload> subscriptions;
 	bool has_been_initialized = false;
+	int _up_time_in_milli_seconds = 0;
 	ApplicationTree _applicationTree;
 	nlohmann::json _initialApplicationTreeJson;
 	nlohmann::json _applicationTreeJson;
+	
 	SimulationSystem simulation_system = {.is_simulating = false, .ready_for_next_tick = false};
 };

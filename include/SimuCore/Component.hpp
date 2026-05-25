@@ -87,6 +87,10 @@ public:
 			return "Input";
 		case ComponentType::INTERNAL_OUTPUT:
 			return "Output";
+		case ComponentType::PHYSICAL_INPUT:
+			return "PhysicalInput";
+		case ComponentType::PHYSICAL_OUTPUT:
+			return "PhysicalOutpus";
 		case ComponentType::COMPONENT:
 			return "Component";
 		default:

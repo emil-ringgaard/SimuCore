@@ -39,6 +39,7 @@ public:
 	virtual std::string getValueAsString() const = 0;
 	virtual SetValueResponse setValueFromString(const std::string &value) = 0;
 	virtual bool valueHasChanged() = 0;
+	virtual void reset_signal() = 0;
 
 	void init() override {}
 	void execute() override {}
@@ -60,9 +61,13 @@ public:
 	Signal(Component *owner, const std::string &name,
 		   ComponentType componentType, const T &initial_value = T{})
 		: SignalBase(owner, name, componentType),
-		  value_(initial_value), last_value_(initial_value)
+		  value_(initial_value), last_value_(initial_value), initial_value(initial_value)
 	{
 		registerSignal();
+	}
+
+	virtual void reset_signal() override {
+		this->setValue(initial_value);
 	}
 
 	// Value access
@@ -134,8 +139,10 @@ public:
 
 	void registerSignal() override;
 
+	
 protected:
 	T value_;
+	T initial_value;
 	T last_value_;
 	bool first_read_ = true;
 };
@@ -234,8 +241,12 @@ public:
 		if (it != signals_.end())
 		{
 			auto response = it->second->setValueFromString(value);
-			SimuCoreLogger::log(response.message);
 		}
+	}
+
+	void reset_signals() {
+		for (auto &p : signals_)
+			p.second->reset_signal();
 	}
 
 private:

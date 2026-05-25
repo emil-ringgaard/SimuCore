@@ -1,7 +1,0 @@
-{
-    "$schema": "generated/Config.schema.json",
-    "sample_frequency": 1,
-    "enable_webserver": true,
-    "log_enabled": true,
-    "blah": "123ddd"
-}

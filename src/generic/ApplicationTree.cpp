@@ -8,16 +8,18 @@ const nlohmann::json ApplicationTree::getApplicationTreeAsJson()
         nlohmann::json componentJson;
         componentJson["name"] = component->getName();
         componentJson["id"] = component->getId();
-
+        
         if (component->getComponentType() == ComponentType::INTERNAL_INPUT ||
             component->getComponentType() == ComponentType::INTERNAL_OUTPUT ||
+            component->getComponentType() == ComponentType::PHYSICAL_INPUT ||
+            component->getComponentType() == ComponentType::PHYSICAL_OUTPUT ||
             component->getComponentType() == ComponentType::PARAMETER)
         {
             const auto signal = SignalRegistry::getInstance().find(component->getId());
 
             componentJson["value"] = signal->getValueAsString();
             componentJson["typeName"] = signal->getTypeName();
-
+            
             if (component->getComponentType() == ComponentType::INTERNAL_OUTPUT)
             {
                 for (auto *connectedInput : signal->getConnectedBaseSignals())
@@ -52,6 +54,5 @@ const nlohmann::json ApplicationTree::getApplicationTreeAsJson()
         return componentJson;
     };
     nlohmann::json applicationTree = buildJsonTree(_root, buildJsonTree);
-    applicationTree["config"] = {{"hello", 123}};
     return applicationTree;
 }
