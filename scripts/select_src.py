@@ -5,7 +5,16 @@ import platform
 if platform.system() == "Windows":
     # Append the Winsock2 library to the linker
     env.Append(LIBS=["ws2_32"])
-# env.Execute(f"$PYTHONEXE -m pip install -r requirements.txt")
+    # Append the Winsock2 library to the linker
+    env.Append(LIBS=["ws2_32"])
+    
+    # Disable Link Time Optimization (fixes the 'plugin needed' archiver error)
+    env.Append(CCFLAGS=["-fno-lto"])
+    env.Append(CXXFLAGS=["-fno-lto"])
+    env.Append(LINKFLAGS=["-fno-lto"])
+    
+    # Force the linker to build a Console app, not a GUI app (fixes the WinMain error)
+    env.Append(LINKFLAGS=["-mconsole"])
 
 from generate_config import generate_config_class
 from generate_struct_from_schema import generate_cpp_and_header_files
