@@ -1,22 +1,22 @@
-import os
-import sys
-import time
 import asyncio
+import os
+from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import threading
-from pathlib import Path
+
 from simucore_simulation import SimuCoreSystem
 
 STATIC_FOLDER = os.path.join(Path(__file__).parent.parent, "simucore-frontend/dist")
 
 # Server script as string
-SERVER_SCRIPT = """
+SERVER_SCRIPT = f"""
 import os
 import sys
 from flask import Flask, send_from_directory, send_file
 
-STATIC_FOLDER = r"{static_folder}"
+STATIC_FOLDER = r"{STATIC_FOLDER}"
 
 app = Flask(__name__)
 
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Flask server shutting down...")
         sys.exit(0)
-""".format(static_folder=STATIC_FOLDER)
+"""
 
 
 def start_simulation_framework(source, target, env):

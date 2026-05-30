@@ -1,7 +1,9 @@
-from generate_struct_from_schema import include_dir, schema_dir
-from pathlib import Path
-from simucore_pytest.core.schemas import Config, generate_simcore_schema
 import json
+from pathlib import Path
+
+from generate_struct_from_schema import include_dir
+
+from simucore_pytest.core.schemas import Config, generate_simcore_schema
 
 type_map = {
     'integer': 'int',
@@ -12,7 +14,7 @@ type_map = {
 
 def generate_config_class(env = None):
     schema_info = generate_simcore_schema(Config)
-    with open (schema_info['schema_path'], 'r') as schema:
+    with open (schema_info['schema_path']) as schema:
         config_schema = json.load(schema)
     from jsonschema import validate
     if env:
@@ -21,12 +23,12 @@ def generate_config_class(env = None):
         simucore_base_config = Path(env['PROJECT_DIR']).joinpath('SimuCoreBaseConfig.json')
     else:
         simucore_base_config = Path(__file__).parent.joinpath('SimuCoreBaseConfig.json')
-    with open(simucore_base_config, 'r') as base_config:
+    with open(simucore_base_config) as base_config:
         simucore_base_config = json.load(base_config)
     validate(instance=simucore_base_config, schema=config_schema)
     properties = config_schema['properties']
     parameters = []
-    initializer_list = [f'Component(parent, name)']
+    initializer_list = ['Component(parent, name)']
     for parameter_name, detail in properties.items():
         parameter_value = str(simucore_base_config[parameter_name]).lower()
         parameter_json_type = detail["type"]
@@ -62,5 +64,5 @@ inline Config config(nullptr, "Config");
     with open (include_dir.joinpath(Config.__name__ + ".hpp"), 'w') as config:
         config.write(cpp_template.format(**custom_class_values))
 
-if '__main__' == __name__:
+if __name__ == '__main__':
     generate_config_class()

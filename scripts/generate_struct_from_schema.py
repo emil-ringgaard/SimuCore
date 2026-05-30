@@ -1,7 +1,8 @@
 import json
 import os
-import shutil
 from pathlib import Path
+import shutil
+
 from simucore_pytest.core.schemas import generate_simucore_schemas
 
 
@@ -17,7 +18,7 @@ class CppFunction:
     def adl_serializer(self, key: str, value: str):
         self._to_json.append(f"{{\"{key}\", {value}}},")
         self._from_json.append(f"j.at(\"{key}\").get_to({value});")
-    
+
     def generate(self):
         code = f"inline void to_json(nlohmann::json &j, const {self.name} &u) {{\n" if not self.to_json_arguments else self.to_json_arguments
         if self.generate_with_nlohmann:
@@ -99,9 +100,9 @@ def generate_cpp_config(env, schema_path):
     if not Path(env['PROJECT_DIR']).joinpath("SimuCoreBaseConfig.json").is_file():
         raise RuntimeError("No configuration found in project!!! Please create a config named SimuCoreBaseConfig.json based on TODO:Schema")
     simucore_base_config = Path(env['PROJECT_DIR']).joinpath('SimuCoreBaseConfig.json')
-    with open(simucore_base_config, 'r') as base_config:
+    with open(simucore_base_config) as base_config:
         simucore_base_config = json.load(base_config)
-    with open(schema_path, 'r') as base_schema:
+    with open(schema_path) as base_schema:
         schema = json.load(base_schema)
     validate(instance=simucore_base_config, schema=schema)
     initializer = generate_initializer('Config', schema, simucore_base_config)
@@ -125,12 +126,12 @@ def get_canonical_type_name(schema_def, property_name=None):
     # Create a signature based on the schema structure
     if "title" in schema_def:
         return schema_def["title"]
-    
+
     # For enums, use the enum values as part of the signature
     if "enum" in schema_def:
         enum_values = sorted(schema_def["enum"])
         return f"Enum_{'_'.join(enum_values)}"
-    
+
     # For objects, create a signature based on properties
     if schema_def.get("type") == "object" and "properties" in schema_def:
         prop_signature = []
@@ -138,11 +139,11 @@ def get_canonical_type_name(schema_def, property_name=None):
             prop_type = details.get("type", "unknown")
             prop_signature.append(f"{prop}_{prop_type}")
         return f"Object_{'_'.join(prop_signature)}"
-    
+
     # Fallback to property-based naming
     if property_name:
         return f"Type_{property_name.capitalize()}"
-    
+
     return "UnknownType"
 
 
@@ -150,38 +151,38 @@ def generate_enum(name, schema_def, root_schema):
     """Generate enum definition and serialization functions"""
     if name in generated_type_names:
         return name
-    
+
     # Check if we already have this enum type
     canonical_name = get_canonical_type_name(schema_def)
     if canonical_name in type_definitions:
         return type_definitions[canonical_name]
-    
+
     enum_values = schema_def["enum"]
-    
+
     # Build enum definition
     enum_lines = [f"enum class {name} {{"]
     enum_lines.append(", ".join(enum_values))
     enum_lines.append("};")
     generated_structs.append("\n".join(enum_lines))
-    
+
     # Build enum serialization
     enum_func = CppFunction(
         generate_with_nlohmann=False,
         name=name,
     )
-    
+
     to_json_body = ["switch(u) {"] + [
         f"case {name}::{val}: j = \"{val}\"; break;"
         for val in enum_values
     ] + ["}"]
-    
+
     enum_func._to_json = to_json_body
     from_json_body = ["std::string s = j.get<std::string>();"]
     for value in enum_values:
         from_json_body.append(f"if (s == \"{value}\") u = {name}::{value};")
     enum_func._from_json = from_json_body
     generated_structs.append(enum_func.generate())
-    
+
     generated_type_names.add(name)
     type_definitions[canonical_name] = name
     return name
@@ -191,18 +192,18 @@ def generate_struct(name, schema, root_schema):
     """Generate struct definition and serialization functions"""
     if name in generated_type_names:
         return name
-    
+
     # Check if we already have this struct type
     canonical_name = get_canonical_type_name(schema)
     if canonical_name in type_definitions:
         return type_definitions[canonical_name]
-    
+
     props = schema.get("properties", {})
     lines = [f"struct {name} {{"]
 
     # Each struct gets its own CppFunction
     cppFunction = CppFunction(name=name)
-    
+
     for prop, details in props.items():
         has_default_value = "default" in details
         if "$ref" in details:
@@ -224,7 +225,7 @@ def generate_struct(name, schema, root_schema):
                 lines.append(f"    {enum_name} {prop} = {enum_name}::{details['default']};")
             else:
                 lines.append(f"    {enum_name} {prop};")
-            
+
             cppFunction.adl_serializer(prop, f"u.{prop}")
 
         elif t in type_map:  # primitive
@@ -243,7 +244,7 @@ def generate_struct(name, schema, root_schema):
             else:
                 child_name = f"{prop.capitalize()}"
                 child_name = generate_struct(child_name, details, root_schema)
-            
+
             lines.append(f"    {child_name} {prop};")
             cppFunction.adl_serializer(prop, f"u.{prop}")
 
@@ -268,14 +269,14 @@ def generate_struct(name, schema, root_schema):
                 lines.append(f"    // TODO: unsupported array type for {prop}")
 
             cppFunction.adl_serializer(prop, f"u.{prop}")
-        
+
         else:
             lines.append(f"    // TODO: unsupported type for {prop}")
 
     lines.append("};")
     generated_structs.append("\n".join(lines))
     generated_structs.append(cppFunction.generate())
-    
+
     generated_type_names.add(name)
     type_definitions[canonical_name] = name
     return name
@@ -285,14 +286,14 @@ def generate_header(schema_filename, header_file_filename):
     header_file = include_dir.joinpath(header_file_filename)
     schema_path = schema_dir.joinpath(schema_filename)
 
-    with open(schema_path, "r") as f:
+    with open(schema_path) as f:
         schema = json.load(f)
-    
+
     # First, generate all $defs types (shared types)
     if "$defs" in schema:
         for def_name, def_schema in schema["$defs"].items():
             generate_struct(def_name, def_schema, schema)
-    
+
     # Then generate the root type
     root_name = schema.get("title", "Root")
     generate_struct(root_name, schema, schema)
@@ -302,7 +303,7 @@ def generate_header(schema_filename, header_file_filename):
         f.write("#pragma once\n\n#include <string>\n#include <vector>\n#include <variant>\n#include <SimuCore/json.hpp>\n\nnamespace SimuCore { \n\n")
         f.write("\n\n".join(generated_structs))
         f.write("\n\n}")
-    
+
     print(f"Generated struct(s) written to {header_file}")
 
 
@@ -312,29 +313,29 @@ def generate_cpp_and_header_files(env = None):
     generated_structs.clear()
     generated_type_names.clear()
     type_definitions.clear()
-    
+
     shutil.rmtree(include_dir, ignore_errors=True)
     schemas = generate_simucore_schemas()
-    
+
     # Generate all schemas into a single header to avoid duplicates
     all_schemas = {}
     for schema_info in schemas:
         schema_path = schema_dir.joinpath(f'{schema_info["name"]}.schema.json')
-        with open(schema_path, "r") as f:
+        with open(schema_path) as f:
             schema_data = json.load(f)
             all_schemas[schema_info["name"]] = schema_data
-    
+
     # First pass: collect all $defs from all schemas
     for schema_name, schema_data in all_schemas.items():
         if "$defs" in schema_data:
             for def_name, def_schema in schema_data["$defs"].items():
                 generate_struct(def_name, def_schema, schema_data)
-    
+
     # Second pass: generate root types
     for schema_name, schema_data in all_schemas.items():
         root_name = schema_data.get("title", schema_name)
         generate_struct(root_name, schema_data, schema_data)
-    
+
     # Write everything to a single header file
     header_file = include_dir.joinpath("Communication.hpp")
     os.makedirs(os.path.dirname(header_file), exist_ok=True)
@@ -342,7 +343,7 @@ def generate_cpp_and_header_files(env = None):
         f.write("#pragma once\n\n#include <string>\n#include <vector>\n#include <variant>\n#include <SimuCore/json.hpp>\n\nnamespace SimuCore { \n\n")
         f.write("\n\n".join(generated_structs))
         f.write("\n\n}")
-    
+
     print(f"All types generated in single header: {header_file}")
 
 
