@@ -1,7 +1,5 @@
 #include <SimuCore/generated/Config.hpp>
 #include <SimuCore/SimuCoreApplication.hpp>
-#include <SimuCore/generated/Config.hpp>
-#include <SimuCore/generated/Communication.hpp>
 #include <unordered_set>
 #include <string>
 
