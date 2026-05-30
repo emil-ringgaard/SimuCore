@@ -7,7 +7,7 @@ from simucore_pytest.core.schemas import generate_simucore_schemas
 
 
 class CppFunction:
-    def __init__(self, name: str, generate_with_nlohmann = True,  to_json_arguments: str = None, from_json_arguments: str = None):
+    def __init__(self, name: str, generate_with_nlohmann = True,  to_json_arguments: str | None = None, from_json_arguments: str | None = None):
         self.name = name
         self._to_json = []
         self._from_json = []
@@ -315,7 +315,7 @@ def generate_cpp_and_header_files(env = None):
     type_definitions.clear()
 
     shutil.rmtree(include_dir, ignore_errors=True)
-    schemas = generate_simucore_schemas()
+    schemas = generate_simucore_schemas(env)
 
     # Generate all schemas into a single header to avoid duplicates
     all_schemas = {}

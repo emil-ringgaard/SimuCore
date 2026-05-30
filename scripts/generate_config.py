@@ -13,7 +13,7 @@ type_map = {
 }
 
 def generate_config_class(env = None):
-    schema_info = generate_simcore_schema(Config)
+    schema_info = generate_simcore_schema(env, Config)
     with open (schema_info['schema_path']) as schema:
         config_schema = json.load(schema)
     from jsonschema import validate
