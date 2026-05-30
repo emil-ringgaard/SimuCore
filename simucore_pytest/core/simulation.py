@@ -1,13 +1,20 @@
 import json
-from pydantic import TypeAdapter
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-from websockets.exceptions import WebSocketException
-from websockets import ClientConnection
-from simucore_pytest.core.application_tree import ApplicationTree
-from simucore_pytest.core.schemas import StartSimulation, TickSystem, ApplicationTreeData, ApplicationInfo, ApplicationInfoProtocol, Response, UpdatePysicalInputsProtocol, UpdateInput
-import time
-from websockets.sync.client import connect
 
+from pydantic import TypeAdapter
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from websockets.exceptions import WebSocketException
+from websockets.sync.client import ClientConnection, connect
+
+from simucore_pytest.core.application_tree import ApplicationTree
+from simucore_pytest.core.schemas import (
+    ApplicationInfo,
+    ApplicationTreeData,
+    Response,
+    StartSimulation,
+    TickSystem,
+    UpdateInput,
+    UpdatePysicalInputsProtocol,
+)
 
 _response_list_adapter = TypeAdapter(Response)
 
@@ -29,7 +36,7 @@ class SimuCoreSystem:
             self._ws = connect(self._uri)
             application_tree_json = json.loads(self._ws.recv())
         else:
-            application_tree_json = json.loads(self.get_application_tree())
+            application_tree_json = self.get_application_tree().model_dump()
         self.application_tree = ApplicationTree(**application_tree_json)
         self._ws.send(StartSimulation().model_dump_json())
         response_json = self._ws.recv()
@@ -44,16 +51,18 @@ class SimuCoreSystem:
             ).model_dump_json()
         )
         ws.recv()
-    
+
     def get_application_info(self) -> ApplicationInfo:
         ws = self._require_ws()
         ws.send(ApplicationInfo().model_dump_json())
-        return ws.recv()
+        json_data = json.loads(ws.recv())[0]
+        return ApplicationInfo(**json_data)
 
     def get_application_tree(self) -> ApplicationTree:
         ws = self._require_ws()
         ws.send(ApplicationTreeData().model_dump_json())
-        return ws.recv()
+        json_data = json.loads(ws.recv())
+        return ApplicationTree(**json_data)
 
     def tick(self, number_of_ticks: int) -> None:
         ws = self._require_ws()

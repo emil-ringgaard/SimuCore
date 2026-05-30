@@ -42,8 +42,8 @@ void SimuCoreApplication::on_message(int clientId, const std::string &message)
     if (!jsonMsg.contains("command"))
     {
         SimuCore::Response errorResponse{
-            .message = "Received message did not contain a command!",
-            .status = SimuCore::StatusEnum::FAILURE};
+            .status = SimuCore::StatusEnum::FAILURE,
+            .message = "Received message did not contain a command!"};
         nlohmann::json errorResponseJson = errorResponse;
         websocket_server_->send_message_to_client(clientId, errorResponseJson.dump());
         return;
@@ -101,7 +101,7 @@ void SimuCoreApplication::on_message(int clientId, const std::string &message)
     }
     else if (command == SimuCore::CommandEnum::INFO) {
         SimuCore::ApplicationInfoProtocol applicationInfo;
-        applicationInfo.response = SimuCore::Response{.message = "Info", .status = SimuCore::StatusEnum::SUCCESS};
+        applicationInfo.response = SimuCore::Response{.status = SimuCore::StatusEnum::SUCCESS, .message = "Info"};
         applicationInfo.subscribed_signals = subscriptions;
         applicationInfo.up_time_in_milli_seconds = _up_time_in_milli_seconds;
         websocket_server_->send_message_to_client(clientId, nlohmann::json{applicationInfo}.dump());
@@ -153,7 +153,7 @@ void SimuCoreApplication::run()
 void SimuCoreApplication::sendSignalValuesToWebsockets()
 {
     SimuCore::ApplicationInfoProtocol applicationInfo;
-    applicationInfo.response = SimuCore::Response{.message = "Info", .status = SimuCore::StatusEnum::SUCCESS};
+    applicationInfo.response = SimuCore::Response{.status = SimuCore::StatusEnum::SUCCESS, .message = "Info"};
     applicationInfo.subscribed_signals = subscriptions;
     applicationInfo.up_time_in_milli_seconds = _up_time_in_milli_seconds;
 

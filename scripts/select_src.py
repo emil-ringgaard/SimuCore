@@ -1,19 +1,13 @@
-from pathlib import Path
 
-Import("env")
+Import("env") # pyright: ignore[reportUndefinedVariable]
 
 # env.Execute(f"$PYTHONEXE -m pip install -r requirements.txt")
 
-import os
-import subprocess
-from generate_struct_from_schema import generate_cpp_and_header_files
-from simucore_pytest.core.schemas import generate_simucore_schemas
 from generate_config import generate_config_class
+from generate_struct_from_schema import generate_cpp_and_header_files
 from simulation import start_simulation_framework
-from SCons.Script import Import, DefaultEnvironment
 
-
-env.AddCustomTarget(
+env.AddCustomTarget( # pyright: ignore[reportUndefinedVariable]
     "simulation",
     "$BUILD_DIR/program",
     start_simulation_framework,
@@ -22,7 +16,7 @@ env.AddCustomTarget(
     always_build=True,
 )
 
-cxxflags = " ".join(env.get("CXXFLAGS", []))
+cxxflags = " ".join(env.get("CXXFLAGS", [])) # pyright: ignore[reportUndefinedVariable]
 
 if "-std=gnu++17" not in cxxflags and "-std=c++17" not in cxxflags:
     print("\n\n[ERROR] This library requires C++17.")
@@ -30,13 +24,13 @@ if "-std=gnu++17" not in cxxflags and "-std=c++17" not in cxxflags:
     print("    build_unflags = -std=gnu++11 -std=gnu++14")
     print("    build_flags = -std=gnu++17\n")
     exit(1)
-print("SimuCore SRC_FILTER:", env["SRC_FILTER"])
+print("SimuCore SRC_FILTER:", env["SRC_FILTER"]) # pyright: ignore[reportUndefinedVariable]
 
-generate_cpp_and_header_files(env)
-generate_config_class(env)
+generate_cpp_and_header_files(env) # pyright: ignore[reportUndefinedVariable]
+generate_config_class(env) # pyright: ignore[reportUndefinedVariable]
 
-platform = env.GetProjectOption("platform")
-frameworks = env.GetProjectOption("framework")
+platform = env.GetProjectOption("platform") # pyright: ignore[reportUndefinedVariable]
+frameworks = env.GetProjectOption("framework") # pyright: ignore[reportUndefinedVariable]
 
 src_dirs = []
 
@@ -47,9 +41,7 @@ src_dirs.append("+<generated/>")
 
 if platform == "native":
     src_dirs.append("+<native/>")
-elif isinstance(frameworks, list) and "arduino" in frameworks:
-    src_dirs.append("+<arduino/>")
-elif isinstance(frameworks, str) and "arduino" in frameworks:
+elif isinstance(frameworks, list) and "arduino" in frameworks or isinstance(frameworks, str) and "arduino" in frameworks:
     src_dirs.append("+<arduino/>")
 
-env.Replace(SRC_FILTER=" ".join(src_dirs))
+env.Replace(SRC_FILTER=" ".join(src_dirs)) # pyright: ignore[reportUndefinedVariable]

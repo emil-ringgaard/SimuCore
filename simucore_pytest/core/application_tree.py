@@ -1,4 +1,6 @@
+# noqa: N815
 from pydantic import BaseModel
+
 
 class ConnectedInput(BaseModel):
     id: int
@@ -31,7 +33,7 @@ class PhysicalOutput(Output):
 class Component(BaseModel):
     id: int
     name: str
-    Components: list["Component"] | None = []
+    Components: list[Component] | None = []
     Inputs: list[Input] | None = []
     Outputs: list[Output] | None = []
     PhysicalOutputs: list[PhysicalOutput] | None = None
@@ -44,4 +46,4 @@ class ApplicationTree(BaseModel):
     id: int
     name: str
     Components: list[Component]
-    config: dict = []
+    config: dict = {}
