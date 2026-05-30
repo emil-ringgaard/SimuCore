@@ -178,6 +178,8 @@ public:
 
 	void connectTo(InputSignal<T> *input)
 	{
+		if (std::find(connected_inputs_.begin(), connected_inputs_.end(), input) != connected_inputs_.end())
+        	return;
 		connected_inputs_.push_back(input);
 		input->setValue(this->value_);
 		this->addBaseSignal(input);
