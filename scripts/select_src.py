@@ -1,6 +1,10 @@
 
 Import("env") # pyright: ignore[reportUndefinedVariable]
+import platform
 
+if platform.system() == "Windows":
+    # Append the Winsock2 library to the linker
+    env.Append(LIBS=["ws2_32"])
 # env.Execute(f"$PYTHONEXE -m pip install -r requirements.txt")
 
 from generate_config import generate_config_class
@@ -26,11 +30,14 @@ if "-std=gnu++17" not in cxxflags and "-std=c++17" not in cxxflags:
     exit(1)
 print("SimuCore SRC_FILTER:", env["SRC_FILTER"]) # pyright: ignore[reportUndefinedVariable]
 
+
 generate_cpp_and_header_files(env) # pyright: ignore[reportUndefinedVariable]
 generate_config_class(env) # pyright: ignore[reportUndefinedVariable]
 
-platform = env.GetProjectOption("platform") # pyright: ignore[reportUndefinedVariable]
+platform_type = env.GetProjectOption("platform") # pyright: ignore[reportUndefinedVariable]
 frameworks = env.GetProjectOption("framework") # pyright: ignore[reportUndefinedVariable]
+
+
 
 src_dirs = []
 
@@ -39,7 +46,7 @@ src_dirs.append("+<generic/>")
 src_dirs.append("+<generated/>")
 
 
-if platform == "native":
+if platform_type == "native":
     src_dirs.append("+<native/>")
 elif isinstance(frameworks, list) and "arduino" in frameworks or isinstance(frameworks, str) and "arduino" in frameworks:
     src_dirs.append("+<arduino/>")

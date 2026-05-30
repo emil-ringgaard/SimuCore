@@ -222,7 +222,7 @@ public:
 		return instance;
 	}
 
-	const SignalBase *find(const uint id) const
+	const SignalBase *find(const unsigned int id) const
 	{
 		auto it = signals_.find(id);
 		return (it != signals_.end()) ? it->second : nullptr;
@@ -237,7 +237,7 @@ public:
 		return allSignals;
 	}
 
-	void changeSignalValue(uint id, const std::string &value)
+	void changeSignalValue(unsigned int id, const std::string &value)
 	{
 		auto it = signals_.find(id);
 		if (it != signals_.end())
@@ -258,7 +258,7 @@ private:
 
 	void add(SignalBase *signal) { signals_[signal->getId()] = signal; }
 
-	std::unordered_map<uint, SignalBase *> signals_;
+	std::unordered_map<unsigned int, SignalBase *> signals_;
 
 	template <typename T>
 	friend class Signal;
