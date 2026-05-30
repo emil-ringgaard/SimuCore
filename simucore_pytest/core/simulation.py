@@ -1,7 +1,7 @@
 import json
 
 from pydantic import TypeAdapter
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 from websockets.exceptions import WebSocketException
 from websockets.sync.client import ClientConnection, connect
 
@@ -27,7 +27,7 @@ class SimuCoreSystem:
 
     @retry(
         stop=stop_after_attempt(5),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
+        wait=wait_fixed(2),
         retry=retry_if_exception_type(
             (ConnectionRefusedError, OSError, WebSocketException)
         ),
