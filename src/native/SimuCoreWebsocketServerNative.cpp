@@ -399,8 +399,11 @@ public:
 		addr.sin_port = htons(port);
 		addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-		setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-		setsockopt(server_sock, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt));
+		setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof(opt));
+
+		#ifdef SO_REUSEPORT
+    		setsockopt(server_sock, SOL_SOCKET, SO_REUSEPORT, (const char*)&opt, sizeof(opt));
+		#endif
 
 		if (bind(server_sock, (struct sockaddr *)&addr, sizeof(addr)) == SOCKET_ERROR)
 		{

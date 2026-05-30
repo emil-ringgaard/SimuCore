@@ -37,7 +37,7 @@ class CppFunction:
 
 type_map = {
     "string": "std::string",
-    "integer": "uint",
+    "integer": "unsigned int",
     "number": "double",
     "boolean": "bool"
 }

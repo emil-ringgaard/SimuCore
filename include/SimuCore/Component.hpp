@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <cstdint>
 #include <SimuCore/SimuCoreLogger.hpp>
 
 class SignalBase;
@@ -21,13 +22,13 @@ enum class ComponentType
 class Component
 {
 private:
-	u_int32_t id_;
+	uint32_t id_;
 
 	int generateDeterministicId()
 	{
 		std::string full_path = this->getFullName();
 		std::hash<std::string> hasher;
-		int hash = static_cast<u_int32_t>(hasher(full_path));
+		int hash = static_cast<uint32_t>(hasher(full_path));
 
 		// Ensure ID is never 0 (reserve 0 for "invalid")
 		return hash == 0 ? 1 : hash;
