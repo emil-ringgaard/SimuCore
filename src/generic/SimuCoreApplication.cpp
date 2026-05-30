@@ -126,13 +126,9 @@ void SimuCoreApplication::run()
 {
     if (simulation_system.is_simulating.load())
     {
-        // Wait for a TICK command to set ticks_remaining > 0
         while (simulation_system.ticks_remaining.load() == 0) { }
-        
         executeAll();
         _up_time_in_milli_seconds += 1000 / SimuCore::config.sample_frequency.getValue();
-        
-        // Decrement and check if we just finished the batch
         int prev = simulation_system.ticks_remaining.fetch_sub(1);
         if (prev == 1) {
             SimuCore::Response successResponse;
@@ -145,7 +141,10 @@ void SimuCoreApplication::run()
     {
         executeAll();
         _up_time_in_milli_seconds += 1000 / SimuCore::config.sample_frequency.getValue();
-        sendSignalValuesToWebsockets();
+        
+        if (!simulation_system.is_simulating.load()) // ← check again before sending
+            sendSignalValuesToWebsockets();
+            
         simu_core_tick->wait_for_next_tick();
     }
 }
