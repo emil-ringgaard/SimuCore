@@ -8,6 +8,7 @@ from websockets.sync.client import ClientConnection, connect
 from simucore_pytest.core.application_tree import ApplicationTree
 from simucore_pytest.core.schemas import (
     ApplicationInfo,
+    ApplicationInfoProtocol,
     ApplicationTreeData,
     Response,
     StartSimulation,
@@ -32,11 +33,19 @@ class SimuCoreSystem:
         ),
     )
     def start(self) -> None:
+        if self._ws:
+            # Validate the connection is actually alive before trusting it
+            try:
+                self._ws.ping()  # or a lightweight health check
+            except Exception:
+                self._ws = None  # let it reconnect cleanly
+
         if not self._ws:
             self._ws = connect(self._uri)
             application_tree_json = json.loads(self._ws.recv())
         else:
             application_tree_json = self.get_application_tree().model_dump()
+
         self.application_tree = ApplicationTree(**application_tree_json)
         self._ws.send(StartSimulation().model_dump_json())
         response_json = self._ws.recv()
@@ -52,11 +61,11 @@ class SimuCoreSystem:
         )
         ws.recv()
 
-    def get_application_info(self) -> ApplicationInfo:
+    def get_application_info(self) -> ApplicationInfoProtocol:
         ws = self._require_ws()
         ws.send(ApplicationInfo().model_dump_json())
         json_data = json.loads(ws.recv())[0]
-        return ApplicationInfo(**json_data)
+        return ApplicationInfoProtocol(**json_data)
 
     def get_application_tree(self) -> ApplicationTree:
         ws = self._require_ws()
