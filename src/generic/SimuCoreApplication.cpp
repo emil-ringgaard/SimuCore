@@ -153,7 +153,7 @@ void SimuCoreApplication::run()
 void SimuCoreApplication::sendSignalValuesToWebsockets()
 {
     SimuCore::ApplicationInfoProtocol applicationInfo;
-    applicationInfo.response = SimuCore::Response{.message = "Info", .status = SimuCore::StatusEnum::SUCCESS};
+    applicationInfo.response = SimuCore::Response{.status = SimuCore::StatusEnum::SUCCESS, .message = "Info"};
     applicationInfo.subscribed_signals = subscriptions;
     applicationInfo.up_time_in_milli_seconds = _up_time_in_milli_seconds;
 
