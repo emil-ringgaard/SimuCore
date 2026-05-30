@@ -142,7 +142,7 @@ void SimuCoreApplication::run()
         executeAll();
         _up_time_in_milli_seconds += 1000 / SimuCore::config.sample_frequency.getValue();
         
-        if (!simulation_system.is_simulating.load()) // ← check again before sending
+        if (!simulation_system.is_simulating.load()) // check again before sending to avoid race condition
             sendSignalValuesToWebsockets();
             
         simu_core_tick->wait_for_next_tick();
